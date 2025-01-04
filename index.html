@@ -1,0 +1,538 @@
+<html>
+
+<head>
+    <base href="." />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartElectric - Home</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+    <script>
+        // Check if user is authenticated
+        function checkAuth() {
+            // You can implement your actual auth check here
+            const isAuthenticated = localStorage.getItem('isAuthenticated');
+            if (!isAuthenticated) {
+                window.location.href = 'screens/welcome.html';
+            }
+        }
+        // Run auth check when page loads
+        checkAuth();
+    </script>
+    <style>
+        /* Hamburger Menu Styles */
+        .hamburger-menu {
+            display: none;
+            /* Hidden by default */
+            flex-direction: column;
+            cursor: pointer;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .hamburger-menu .bar {
+            width: 25px;
+            height: 3px;
+            background-color: #333;
+            margin: 4px 0;
+            transition: 0.4s;
+        }
+
+        /* Mobile Navigation Styles */
+        .mobile-nav {
+            display: none;
+            /* Hidden by default */
+            flex-direction: column;
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 999;
+        }
+
+        .mobile-nav a {
+            padding: 10px 20px;
+            text-decoration: none;
+            color: #333;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .mobile-nav a:last-child {
+            border-bottom: none;
+        }
+
+        /* Show the hamburger menu on smaller screens */
+        @media (max-width: 768px) {
+            .hamburger-menu {
+                display: flex;
+            }
+
+            .nav-bar {
+                display: none;
+                /* Hide the regular nav bar on mobile */
+            }
+        }
+
+        /* Navigation Bar Styles */
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #fff;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .nav-bar a {
+            text-decoration: none;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .nav-bar a.active {
+            color: #2196F3;
+        }
+
+        .nav-icon {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Add your home page content here -->
+    <div class="header">
+        <div class="logo">SmartElectric</div>
+        <p>Monitor and manage your electricity usage</p>
+    </div>
+
+
+    <div class="usage-gauge">
+        <h3>Power Usage Overview</h3>
+        <div class="gauge">
+            <div class="gauge-pointer"></div>
+            <div class="gauge-fill"></div>
+            <div class="gauge-center">0%</div>
+        </div>
+        <div class="usage-stats">
+            <div class="stat-item">
+                <div class="stat-value">2.4 kWh</div>
+                <div class="stat-label">Current Usage</div>
+            </div>
+        </div>
+        <div class="usage-warning warning-good">✅ Great! Your power consumption is within efficient levels.</div>
+    </div>
+
+    <div class="grid-container">
+        <div class="card" onclick="navigate('usage')">
+            <svg class="card-icon" viewBox="0 0 24 24">
+                <path d="M3 3v18h18v-2H5V3H3zm4 14h2v-4H7v4zm4 0h2V7h-2v10zm4 0h2v-7h-2v7zm4 0h2V4h-2v13z"></path>
+            </svg>
+            <h2>Usage Overview</h2>
+            <p>Track your real-time consumption</p>
+            <span class="card-action">View Details →</span>
+        </div>
+
+        <div class="card" onclick="navigate('tokens')">
+            <svg class="card-icon" viewBox="0 0 24 24">
+                <path d="M7 2v11h3v9l7-12h-4l4-8z"></path>
+            </svg>
+            <h2>Token Activation</h2>
+            <p>Enter prepaid tokens</p>
+            <span class="card-action">Activate →</span>
+        </div>
+
+        <div class="card" onclick="navigate('balance')">
+            <svg class="card-icon" viewBox="0 0 24 24">
+                <path
+                    d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z">
+                </path>
+            </svg>
+            <h2>Balance</h2>
+            <div class="balance">50.5 kWh</div>
+            <span class="card-action">Current Balance</span>
+        </div>
+
+        <div class="card" onclick="navigate('budget')">
+            <svg class="card-icon" viewBox="0 0 24 24">
+                <path
+                    d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z">
+                </path>
+            </svg>
+            <h2>Budget</h2>
+            <div class="progress-bar">
+                <div class="progress"></div>
+            </div>
+            <span class="card-action">Manage →</span>
+        </div>
+
+        <div class="card" onclick="navigate('carbon')">
+            <svg class="card-icon" viewBox="0 0 24 24">
+                <path
+                    d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66l.95-2.3c.48.17.98.3 1.34.3C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75C7 8 17 8 17 8z">
+                </path>
+            </svg>
+            <h2>Carbon Footprint</h2>
+            <p>Track your impact</p>
+            <span class="card-action">View →</span>
+        </div>
+
+        <div class="card" onclick="navigate('family')">
+            <svg class="card-icon" viewBox="0 0 24 24">
+                <path
+                    d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z">
+                </path>
+            </svg>
+            <h2>Family Access</h2>
+            <p>Share access</p>
+            <span class="card-action">Manage →</span>
+        </div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav class="nav-bar">
+        <a href="#home" class="nav-item" onclick="setActiveNav(this, 'home')">
+            <svg class="nav-icon" viewBox="0 0 24 24">
+                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+            </svg>
+            <span>Home</span>
+        </a>
+        <a href="#location" class="nav-item" onclick="setActiveNav(this, 'location')">
+            <svg class="nav-icon" viewBox="0 0 24 24">
+                <path
+                    d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+            </svg>
+            <span>Location</span>
+        </a>
+        <a href="#notifications" class="nav-item" onclick="setActiveNav(this, 'notifications')">
+            <svg class="nav-icon" viewBox="0 0 24 24">
+                <path
+                    d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
+            </svg>
+            <span>Alerts</span>
+        </a>
+        <a href="screens/settings.html" class="nav-item" onclick="setActiveNav(this, 'settings')">
+            <svg class="nav-icon" viewBox="0 0 24 24">
+                <path
+                    d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
+            </svg>
+            <span>Settings</span>
+        </a>
+    </nav>
+
+    <!-- Add Payment Modal -->
+    <div id="payment-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Purchase Tokens</h2>
+                <button class="close-modal" onclick="closePaymentModal()">×</button>
+            </div>
+            <form id="payment-form">
+                <div id="card-element" class="StripeElement StripeElement--empty">
+                    <div class="__PrivateStripeElement">
+                        <iframe name="__privateStripeFrame1503" frameborder="0" allowtransparency="true" scrolling="no"
+                            role="presentation" allow="payment *"
+                            src="https://js.stripe.com/v3/elements-inner-card-1b302160a87fb4a5f33df03e8a4f5e9d.html#wait=false&amp;mids[guid]=NA&amp;mids[muid]=NA&amp;mids[sid]=NA&amp;rtl=false&amp;componentName=card&amp;keyMode=unknown&amp;apiKey=your-publishable-key&amp;referrer=https%3A%2F%2Frl5qadvv9xxperg7apk0.c.wbsm.ai%2F%23tokens&amp;controllerId=__privateStripeController1501"
+                            title="Secure card payment input frame"></iframe>
+                        <input class="__PrivateStripeElement-input" aria-hidden="true" aria-label=" "
+                            autocomplete="false" maxlength="1">
+                    </div>
+                </div>
+                <div id="card-errors" role="alert"></div>
+                <button class="pay-button">Pay Now</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Facebook SDK
+        window.fbAsyncInit = function () {
+            FB.init({
+                appId: 'your-fb-app-id', // Replace with your Facebook App ID
+                cookie: true,
+                xfbml: true,
+                version: 'v12.0'
+            });
+        };
+
+        // Initialize Stripe
+        const stripe = Stripe('your-publishable-key'); // Replace with your Stripe publishable key
+        const elements = stripe.elements();
+        const card = elements.create('card');
+        card.mount('#card-element');
+
+        // Handle payment form submission
+        const form = document.getElementById('payment-form');
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const { token, error } = await stripe.createToken(card);
+
+            if (error) {
+                showNotification('Payment failed: ' + error.message, 'error');
+            } else {
+                processPayment(token);
+            }
+        });
+
+        // Update the chart configuration
+        const ctx = document.getElementById('usageChart').getContext('2d');
+        const usageChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Power Usage (kW)',
+                    data: [],
+                    borderColor: 'rgba(33, 150, 243, 1)',
+                    backgroundColor: 'rgba(33, 150, 243, 0.2)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: '24-Hour Usage Pattern'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Power Usage (kW)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Time'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Start the simulation for gauge
+        function updateGauge(value) {
+            const gaugeElement = document.querySelector('.gauge-fill');
+            const gaugeText = document.querySelector('.gauge-center');
+            const pointerElement = document.querySelector('.gauge-pointer');
+            const warningElement = document.querySelector('.usage-warning');
+
+            // Convert percentage to degrees (0% = -180deg, 100% = 0deg)
+            const rotation = -180 + (value / 100) * 180;
+
+            // Update gauge fill rotation
+            gaugeElement.style.transform = `rotate(${rotation}deg)`;
+
+            // Update pointer rotation (-90deg = 0%, 90deg = 100%)
+            const pointerRotation = -90 + (value / 100) * 180;
+            pointerElement.style.transform = `rotate(${pointerRotation}deg)`;
+
+            // Update text with animation
+            gaugeText.style.animation = 'pulse 0.5s ease';
+            gaugeText.textContent = `${value}%`;
+
+            // Remove all warning classes
+            warningElement.classList.remove('warning-critical', 'warning-high', 'warning-moderate', 'warning-good');
+
+            // Set color and warning message based on consumption levels
+            let color;
+            let warningClass;
+            let warningMessage;
+
+            if (value >= 90) {
+                // Red - Excessive consumption
+                color = '#FF0000';
+                warningClass = 'warning-critical';
+                warningMessage = '⚠️ Critical: Immediate action required! Your consumption is extremely high. Consider turning off non-essential appliances.';
+            } else if (value >= 70) {
+                // Orange - High consumption
+                color = '#FFA500';
+                warningClass = 'warning-high';
+                warningMessage = '⚠️ Warning: Your power usage is high. Try to reduce consumption during peak hours.';
+            } else if (value >= 40) {
+                // Yellow - Moderate consumption
+                color = '#FFC107';
+                warningClass = 'warning-moderate';
+                warningMessage = '📊 Notice: Moderate consumption detected. Monitor usage to maintain efficiency.';
+            } else {
+                // Green - Low consumption
+                color = '#4CAF50';
+                warningClass = 'warning-good';
+                warningMessage = '✅ Great! Your power consumption is within efficient levels.';
+            }
+
+            // Update warning message
+            warningElement.textContent = warningMessage;
+            warningElement.classList.add(warningClass);
+
+            gaugeText.style.color = color;
+            gaugeElement.style.borderColor = color;
+            gaugeElement.style.borderBottomColor = 'transparent';
+
+            // Remove animation once complete
+            setTimeout(() => {
+                gaugeText.style.animation = '';
+            }, 500);
+        }
+
+        // Update the simulateUsageChanges function to test different ranges
+        function simulateUsageChanges() {
+            let baseValue = 45; // Start with a lower value
+            let variance = 8;  // Increased variance for better demonstration
+
+            setInterval(() => {
+                // Create more natural fluctuations
+                const change = (Math.random() - 0.5) * variance;
+                let newValue = Math.round(baseValue + change);
+
+                // Keep within bounds
+                newValue = Math.max(0, Math.min(100, newValue));
+
+                // Gradually shift base value to test different ranges
+                baseValue = baseValue * 0.95 + newValue * 0.05;
+
+                // Every minute, jump to a different consumption level to demonstrate all colors
+                if (Math.random() < 0.1) {  // 10% chance each update
+                    baseValue = Math.random() * 100;  // Jump to random level
+                }
+
+                updateGauge(newValue);
+            }, 3000);
+        }
+
+        // Start the simulation when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            simulateUsageChanges();
+        });
+
+        // Facebook Login
+        function fbLogin() {
+            FB.login(function (response) {
+                if (response.status === 'connected') {
+                    showNotification('Successfully logged in with Facebook!', 'success');
+                } else {
+                    showNotification('Facebook login failed', 'error');
+                }
+            }, { scope: 'email,public_profile' });
+        }
+
+        // Payment Modal Functions
+        function openPaymentModal() {
+            document.getElementById('payment-modal').style.display = 'block';
+        }
+
+        function closePaymentModal() {
+            document.getElementById('payment-modal').style.display = 'none';
+        }
+
+        // Process Payment
+        async function processPayment(token) {
+            try {
+                // Here you would normally send the token to your server
+                showNotification('Payment successful!', 'success');
+                closePaymentModal();
+            } catch (error) {
+                showNotification('Payment failed: ' + error.message, 'error');
+            }
+        }
+
+        // Notification System
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.innerHTML = `
+        <svg class="card-icon" style="width: 24px; height: 24px;">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+        </svg>
+        <span>${message}</span>
+      `;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Navigation functions
+        function navigate(section) {
+            console.log(`Navigating to ${section}`);
+            if (section === 'tokens') {
+                openPaymentModal();
+            } else if (section === 'usage') {
+                openUsageStats();
+            } else {
+                alert(`Navigating to ${section} section`);
+            }
+        }
+
+        function openUsageStats() {
+            document.getElementById('usage-statistics').style.display = 'block';
+            // Update chart when opening the stats page
+            updateUsageChart();
+        }
+
+        function closeUsageStats() {
+            document.getElementById('usage-statistics').style.display = 'none';
+        }
+
+        function updateUsageChart() {
+            // Generate some random data for the last 24 hours
+            const labels = Array.from({ length: 24 }, (_, i) => `${i}:00`);
+            const data = Array.from({ length: 24 }, () => Math.random() * 4 + 1); // Random values between 1-5
+
+            usageChart.data.labels = labels;
+            usageChart.data.datasets[0].data = data;
+            usageChart.update();
+        }
+
+        function setActiveNav(element, section) {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            element.classList.add('active');
+            navigate(section);
+
+            // Close the mobile menu after navigation
+            const mobileNav = document.getElementById('mobileNav');
+            mobileNav.style.display = 'none';
+        }
+
+        // Request notification permission on page load
+        if ('Notification' in window) {
+            Notification.requestPermission().then(function (permission) {
+                if (permission === 'granted') {
+                    showNotification('Notifications enabled!');
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
